@@ -33,7 +33,6 @@
 
 <script>
 import ItemList from '@/components/ItemList';
-import { getItemsOf } from '@/api';
 import getIdenticon from './Identicon';
 
 export default {
@@ -60,7 +59,6 @@ export default {
     },
   },
   async created() {
-    this.itemIds = await getItemsOf(this.$route.params.address);
   },
 
   watch: {},

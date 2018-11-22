@@ -4,25 +4,12 @@
       <div class="navbar-brand">
         <router-link class="navbar-item"
                      :to="{ name: 'Home'}">
-          <img src="/static/assets/logo.png">&nbsp;&nbsp;{{$t('CryptoHero')}}
+          <img src="/static/assets/logo.png">&nbsp;&nbsp; 快神话 
         </router-link>
 
-        <router-link v-if="!me"
-                     class="navbar-item"
-                     :to="{ name: 'Login'}">
-          {{$t('Sign In')}}
-        </router-link>
-
-        <router-link v-else
-                     class="navbar-item"
-                     :to="{ name: 'User', params:{address: me.address}}">
-          {{$t('My Cards')}}
-        </router-link>
-
-        <router-link class="navbar-item"
-                     :to="{ name: 'FAQ'}">
-          {{$t('FAQs')}}
-        </router-link>
+        <a class="navbar-item" href="/static/assets/shenhua.pdf" target="_blank">
+          游戏规则
+        </a>
 
         <!-- <router-link class="navbar-item"
                      :to="{ name: 'BirthdayGift'}">
@@ -31,28 +18,15 @@
       </div>
 
       <div class="navbar-end">
-        <div class="navbar-item">
-          <div class="field is-grouped">
-            <p class="control">
-              {{network.name}}
-            </p>
+        <div v-if="scatterAccount" class="navbar-item">
+          <div class="">
+            {{scatterAccount.name}}
           </div>
         </div>
-        <div class="navbar-item">
-          <div class="field is-grouped">
-
-            <div class="control">
-              <div class="select">
-                <select v-model="locale">
-                  <option v-for="(item) in $config.i18n"
-                          :key="item.locale"
-                          :value="item.locale">
-                    {{item.langDisplay}}</option>
-                </select>
-              </div>
-            </div>
-
-          </div>
+        <div v-else class="navbar-item">
+          <button class="button is-primary" @click="loginScatterAsync">
+          登录
+          </button>
         </div>
       </div>
 
@@ -64,7 +38,8 @@
 </template>
 
 <script>
-import { getNetwork, getAnnouncements } from '@/api';
+import { mapActions, mapState } from 'vuex';
+
 
 export default {
   name: 'Header',
@@ -75,54 +50,38 @@ export default {
     };
   },
   async created() {
-    this.$store.dispatch('initLocale');
-    this.$store.dispatch('FETCH_ME');
-    const network = await getNetwork();
-    if (!network) {
-      alert('Unknown network!');
-      return;
-    }
-    this.network = network;
-    if (!network.contract) {
-      alert(`Unsupported ${network.name}`);
-    }
-    const infos = [];
-    const announcements = await getAnnouncements();
-    announcements.forEach(({ type, content }) => {
-      if (type === 'info') {
-        infos.push(content);
-      }
-    });
-    this.infos = infos;
+  },
+  methods: {
+     ...mapActions(['connectScatterAsync', 'updateLandInfoAsync', 'loginScatterAsync', 'logoutScatterAsync', 'updateMarketInfoAsync', 'getGlobalInfo']),
+    toast() {
+      this.$toastr.s("test");
+    },
   },
   computed: {
-    locale: {
-      get() {
-        const locale = this.$store.state.locale;
-        const i18n = this.$config ? this.$config.i18n : [];
-        const lang = i18n.find(
-          item =>
-            item.locale === locale ||
-            item.aliases.some(alias => alias === locale),
-        );
-        return lang ? lang.locale : null;
-      },
-      set(value) {
-        this.$store.dispatch('setLocale', value);
-      },
-    },
+    ...mapState(['scatterAccount']),
     me() {
       return this.$store.state.me;
     },
   },
   watch: {
-    locale(val) {
-      this.$i18n.locale = val;
-    },
   },
 };
 </script>
 
 <style>
+.neon1 {
+  color: #fff;
+  font-family: Monoton;
+  -webkit-animation: neon1 1.5s ease-in-out infinite alternate;
+  -moz-animation: neon1 1.5s ease-in-out infinite alternate;
+  animation: neon1 1.5s ease-in-out infinite alternate;
+}
+
+.neon1:hover {
+  color: #FF1177;
+  -webkit-animation: none;
+  -moz-animation: none;
+  animation: none;
+}
 
 </style>

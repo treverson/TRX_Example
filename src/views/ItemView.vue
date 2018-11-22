@@ -77,8 +77,6 @@
 </template>
 
 <script>
-import { buyItem, exchangeLuckyToken, setGg, setNextPrice } from '@/api';
-import { toReadablePrice } from '@/util';
 
 export default {
   name: 'item-view',
@@ -115,6 +113,7 @@ export default {
     },
   },
   async created() {
+    alert("item view");
     this.$store.dispatch('FETCH_ITEM', this.itemId);
     this.$store.dispatch('FETCH_AD', this.itemId);
   },
