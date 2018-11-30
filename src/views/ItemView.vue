@@ -13,7 +13,7 @@
         <div class="column
            is-full-mobile">
           <div class="content">
-            <h2>{{item.nickname}} · {{item.name}}</h2>
+            <h2>{{item.nickname}} - {{item.name}}</h2>
             <ul>
               <li>{{$t('Owner')}}：
                 <router-link :to="{ name: 'User', params:{address: item.owner}}">
@@ -113,7 +113,6 @@ export default {
     },
   },
   async created() {
-    alert("item view");
     this.$store.dispatch('FETCH_ITEM', this.itemId);
     this.$store.dispatch('FETCH_AD', this.itemId);
   },

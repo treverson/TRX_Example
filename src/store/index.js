@@ -12,7 +12,7 @@ import Toastr from 'vue-toastr';
 require('vue-toastr/src/vue-toastr.scss');
 // Register plugin
 Vue.use(Toastr, {
-  defaultTimeout: 1000,
+  defaultTimeout: 2000,
   defaultProgressBar: false,
   defaultProgressBarValue: 0,
   defaultType: "error",
@@ -22,7 +22,6 @@ Vue.use(Toastr, {
 
 Vue.use(Vuex);
 
-
 export default new Vuex.Store({
   modules: {
     ui,
@@ -31,6 +30,10 @@ export default new Vuex.Store({
   state: {
     isScatterConnected: false,
     scatterAccount: null,
+    tronWeb: {
+        installed: false,
+        loggedIn: false
+    },
     balances: {
       eos: '0 EOS',
       cmu: '0 CMU',
@@ -56,6 +59,9 @@ export default new Vuex.Store({
     setLandInfo(state, landInfo) {
       state.landInfo = landInfo;
       state.landInfoUpdateAt = new Date();
+    },
+    setTronWeb(state, tronWebInfo) {
+      state.tronWeb = tronWebInfo;
     },
     setMarketInfo(state, marketInfo) {
       state.marketInfo = marketInfo;

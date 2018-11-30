@@ -4,9 +4,7 @@
       <div class="content has-text-centered">
         <p>
           <small>
-            All rights reserved. <br>
-            &copy; Copyright 2018
-            <strong>kuaishenhua.me</strong>
+            <strong>A smart world at xworld.io</strong>
           </small>
         </p>
       </div>

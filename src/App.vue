@@ -1,5 +1,5 @@
 <template>
-  <div id="app" style="background-color: #000">
+  <div id="app" style="">
     <Header />
 
     <div class="container main-container">
@@ -36,5 +36,9 @@ export default {
   margin-bottom: 2rem;
   padding-left: 1rem;
   padding-right: 1rem;
+}
+#app {
+  background-color: #009688;
+  background-image: url(../static/assets/bg.png);
 }
 </style>

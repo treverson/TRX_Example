@@ -4,11 +4,15 @@
       <div class="navbar-brand">
         <router-link class="navbar-item"
                      :to="{ name: 'Home'}">
-          <img src="/static/assets/logo.png">&nbsp;&nbsp; 快神话 
+          <img src="/static/assets/logo.png">
         </router-link>
 
-        <a class="navbar-item" href="/static/assets/shenhua.pdf" target="_blank">
-          游戏规则
+        <a class="navbar-item" href="/static/assets/xworld_en.pdf" target="_blank">
+          White Paper En
+        </a>
+
+        <a class="navbar-item" href="/static/assets/xworld_zh.pdf" target="_blank">
+          White Paper Zh 
         </a>
 
         <!-- <router-link class="navbar-item"
@@ -18,14 +22,12 @@
       </div>
 
       <div class="navbar-end">
-        <div v-if="scatterAccount" class="navbar-item">
+        <div v-if="userInfo" class="navbar-item">
           <div class="">
-            {{scatterAccount.name}}
           </div>
         </div>
         <div v-else class="navbar-item">
-          <button class="button is-primary" @click="loginScatterAsync">
-          登录
+          <button class="button is-danger" @click="loginScatterAsync" style="display: none;">
           </button>
         </div>
       </div>
@@ -39,6 +41,7 @@
 
 <script>
 import { mapActions, mapState } from 'vuex';
+import Utils from '@/utils';
 
 
 export default {
@@ -58,10 +61,13 @@ export default {
     },
   },
   computed: {
-    ...mapState(['scatterAccount']),
+    ...mapState(['scatterAccount', 'userInfo']),
     me() {
       return this.$store.state.me;
     },
+    address() {
+      return '';
+    }
   },
   watch: {
   },

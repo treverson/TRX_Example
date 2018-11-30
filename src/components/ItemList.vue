@@ -1,33 +1,40 @@
 <template>
   <div class="columns is-multiline is-mobile">
     <div v-for="item in items"
-                 v-if="item"
+                 v-if="item &&(item.id!=69)&&(item.id!=64)"
                  :key=item.id.toString()
                  class="column
            is-half-mobile
            is-one-quarter-tablet
-           is-2-desktop
-           is-2-widescreen
-           is-2-fullhd">
-      <template v-if="0 <= item.id && item.id <= 77">
-        <div class="card" style="background-color: #000;">
-          <div class="card-image">
+           is-3-desktop
+           is-3-widescreen
+           is-3-fullhd">
+      <template>
+        <div class="card" style="border-radius: 10px;">
+          <div class="card-image" style="border: 1rem solid black; border-radius: 5px; background-color: #000;">
+            <div class="columns" style="height: 5rem;">
+              <div class="column is-5">
+                <figure class="image is-16by9">
+                  <img class="" v-lazy="getCardFlag(item.id)" style="border-radius: 5px;">
+                </figure>
+              </div>
+            </div>
             <figure class="image is-5by4">
-              <img v-lazy="getCardImage(item.id)">
+              <img class="is-rounded" v-lazy="getCardImage(item.id)">
             </figure>
           </div>
           <div class="card-content">
-            <div class="content is-small has-text-centered has-text-white">
+            <div class="content is-small has-text-centered">
               <div class="is-size-5"> {{getCardName(item.id)}}</div>
               <div>
                 {{$t('Owner')}}：
                   <span v-if="item.owner"
                                :to="{ name: 'User', params:{address: item.owner}}">
-                    {{item.owner.slice(0, 5).toLowerCase()}}
+                    {{transferAddress(item.owner).slice(0, 12)}}
                   </span>
               </div>
-              <div class="button is-large is-fullwidth is-info" @click="buyCardAsync(item.id, item.price)"> 
-                <div> {{nextPrice(item.price) | short}} </div>
+              <div class="button is-fullwidth is-info" @click="buyCardAsync(item.id, item.price)" style="border-radius: 8px;"> 
+                <div> {{item.price | short}} </div>
               </div>
             </div>
           </div>
@@ -41,66 +48,94 @@
 import API from '@/util/api';
 import * as config from '@/config';
 import { mapState, mapActions } from 'vuex';
+import Utils from '@/utils';
+import TronWeb from 'tronweb';
+import swal from 'sweetalert';
 
 export default {
   name: 'item-lists',
-  props: ['items'],
+  props: ['items', 'endTime'],
 
   data: () => ({
+    inviteCode: 1
   }),
 
   computed: {
-     ...mapState(['scatterAccount']),
+     ...mapState(['scatterAccount', 'tronWeb']),
   },
 
   methods: {
+    transferAddress(address) {
+      return Utils.transferAddress(address);
+    },
     getCardImage(id) {
-      const new_id = id+1;
-      const image = `http://static.togetthere.cn/sh${new_id}.jpg`;
+      const imageId = config.cards[id].image_id;
+      var image = '';
+      if (id > 7) {
+        if (id==65) {
+          image = "http://static.togetthere.cn/bigcn.png";
+        } else {
+          image = `http://static.togetthere.cn/${imageId}.svg`;
+        }
+      } else {
+        image = `http://static.togetthere.cn/${imageId}.png`;
+      }
+      return image;
+    },
+    getInviteCode() {
+              var sPageURL = decodeURIComponent(window.location.search.substring(1)),
+              sURLVariables = sPageURL.split('&'),
+              sParameterName,
+              i;
+
+              for (i = 0; i < sURLVariables.length; i++) {
+                  sParameterName = sURLVariables[i].split('=');
+
+                  if (sParameterName[0] === "r") {
+                      return sParameterName[1] === undefined ? "": sParameterName[1];
+                 }
+              }
+              return 1;
+    },
+    getCardFlag(id) {
+      const imageId = config.cards[id].image_id;
+      const image = `http://static.togetthere.cn/${imageId}.png`;
       return image;
     },
     getCardName(id) {
-      name = config.cards.card_list[id];
+      name = config.cards[id].name;
       return name;
     },
     nextPrice(item_price) {
       return this.$API.getNextPrice(item_price);
     },
-    async buyCardAsync(item_id, item_price) {
-      const game_time = 1542884400;
+    async buyCardAsync(cardId, cardPrice) {
+      const game_time = 1543492800;
       this.currentTimestamp = Math.floor(Date.now() / 1000);
       if (this.currentTimestamp < game_time) {
-        this.$toastr.e("游戏将在"+(game_time- this.currentTimestamp).toString()+"秒后开始");
+        this.$toastr.e("Game will start in"+(game_time- this.currentTimestamp).toString()+"seconds");
         return;
       }
-      if (! this.scatterAccount) {
-        this.$toastr.e("没有登录");
+      if (this.currentTimestamp > this.endTime) {
+        this.$toastr.e("Game Already End.");
         return;
       }
-      this.isScatterPaying = true;
-      try {
-        await API.transferEOSAsync({
-          from: this.scatterAccount.name,
-          to: 'luckycat1111',
-          amount: this.$API.getNextPrice(item_price),
-          memo: 'buy_land ' + item_id
+      if (!this.tronWeb.loggedIn) {
+        this.$toastr.e("No Tron Account. Found. Try Refresh This Page.");
+        return;
+      }
+      // buy
+      Utils.contract.buyCard(cardId, this.inviteCode).send({
+            shouldPollResponse: true,
+            callValue: cardPrice
+      }).then(res => {
+        this.$toastr.s("Buy Success. Please wait ...");
+       }).catch(err => {
+         this.$toastr.e("Buy Failed.");
+        }).then(err => {
         });
-        this.$toastr.s("购买成功");
         this.isScatterPaying = false;
-        return true;
-      } catch (error) {
-        console.error(error);
-
-        let msg;
-        if (error.message === undefined) {
-          msg = JSON.parse(error).error.details[0].message;
-        } else {
-          msg = error.message;
-        }
-        this.$toastr.e(msg);
-      }
-      this.isScatterPaying = false;
-      return null;
+        return null;
     },
     isMobile() {
       var check = false;
@@ -110,6 +145,7 @@ export default {
   },
 
   created() {
+    this.inviteCode = this.getInviteCode();
   },
 
   watch: {
